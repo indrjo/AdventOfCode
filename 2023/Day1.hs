@@ -1,14 +1,29 @@
 {- cabal:
     build-depends: base, parsec
-    other-modules: Day1Part1
 -}
 
-module Day1Part2 where
+module Day1 where
 
+import Data.Char (isDigit)
 import Text.Parsec
 import Text.Parsec.String
 
-import Day1Part1
+
+-- Part 1
+
+part1 :: FilePath -> IO Int
+part1 fname = sum . listCalibrationValues1 <$> readFile fname
+
+calibrationValue :: String -> Int
+calibrationValue string =
+  let digits = filter isDigit string in
+    read [head digits, last digits]
+
+listCalibrationValues1 :: String -> [Int]
+listCalibrationValues1 = map calibrationValue . lines
+
+
+-- Part 2
 
 part2 :: FilePath -> IO Int
 part2 fname = sum . listCalibrationValues2 <$> readFile fname
@@ -36,11 +51,12 @@ digitInLetters =
 translateParser :: GenParser Char s String
 translateParser =
       (eof >> return [])
-  <|> (digitInLetters >>=
-        \d -> (d ++) <$> translateParser)
-  <|> (anyChar >>= 
-        \c -> (c :) <$> translateParser)
+  <|> (digitInLetters >>= \d ->
+          (d ++) <$> translateParser)
+  <|> (anyChar >>= \c ->
+          (c :) <$> translateParser)
   
 listCalibrationValues2 :: String -> [Int]
 listCalibrationValues2 =
   either (\_ -> []) listCalibrationValues1 . parse translateParser ""
+
